@@ -34,17 +34,21 @@ public:
 	class UBoxComponent* CorridorTileCollision;
 
 	UFUNCTION(BlueprintCallable, Category = "CorridorTile")
-	FTransform GetAttachTransform();
+	const FTransform& GetAttachTransform();
 	
 	UFUNCTION(BlueprintCallable, Category = "CorridorTile")
-	void SpawnCorridorTile(UWorld* world);
+	void SpawnCorridorTile(const FTransform& inTransform);
 
 	UFUNCTION()
 	virtual void OnOverlapBegin(class UPrimitiveComponent* firstComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	void SetWorldToSpawn(UWorld* InWorldToSpawn) { WorldToSpawn = InWorldToSpawn; }
 
 private:
 
 	class ABattetyProjectGameMode* BattetyProjectGameMode;
 
 	USceneComponent* RootSceneComponent;
+
+	UWorld* WorldToSpawn = nullptr;
 };

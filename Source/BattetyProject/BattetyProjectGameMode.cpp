@@ -113,28 +113,28 @@ void ABattetyProjectGameMode::ResumeGame()
 
 void ABattetyProjectGameMode::SpawnNextCoridorTile()
 {
+	ACorridorTile* NextCorridorTile = NewObject<ACorridorTile>(CorridorBlueprint);
+	NextCorridorTile->CorridorBlueprint = CorridorBlueprint;
 	if (TCorridorTile.Num() > 0)
 	{
-		ACorridorTile* lastCorridorTile = TCorridorTile.Last();
-		lastCorridorTile->SpawnCorridorTile(GetWorld());
+		NextCorridorTile->SpawnCorridorTile(TCorridorTile.Last()->GetAttachTransform());
 	}
 	else
 	{
-		ACorridorTile* InitialCorridorTile = NewObject<ACorridorTile>(CorridorBlueprint);
-		//InitialCorridorTile->SetActorLocation(FVector(-80, 0, 0));
-		InitialCorridorTile->CorridorBlueprint = CorridorBlueprint;
-		InitialCorridorTile->SpawnCorridorTile(GetWorld());
+		NextCorridorTile->SetWorldToSpawn(GetWorld());
+		NextCorridorTile->SpawnCorridorTile(FTransform(FVector(0,0,0)));
 	}
+	TCorridorTile.Add(NextCorridorTile);
+	AddCoridorTile();
 }
 
-void ABattetyProjectGameMode::AddCoridorTile(ACorridorTile* previousCoridorTile)
+void ABattetyProjectGameMode::AddCoridorTile()
 {
 	if (TCorridorTile.Num() > NumberOfCorridorTiles)
 	{
-		TCorridorTile.RemoveAt(0);
-		TCorridorTile.Shrink();
+		FTransform LastTileTransfrorm = TCorridorTile.Last()->GetAttachTransform();
+		TCorridorTile[0]->SetActorLocation(LastTileTransfrorm.GetLocation());
 	}
-	TCorridorTile.AddUnique(previousCoridorTile);
 }
 
 ABattetyProjectCharacter* ABattetyProjectGameMode::GetCurrentPlayer()

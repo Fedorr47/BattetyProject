@@ -47,7 +47,7 @@ public:
 	void ResumeGame();
 
 	UFUNCTION(BlueprintCallable, Category = "BattryGameMode")
-	void AddCoridorTile(class ACorridorTile* previousCoridorTile);
+	void AddCoridorTile();
 
 	UFUNCTION(BlueprintCallable, Category = "BattryGameMode")
 	ABattetyProjectCharacter* GetCurrentPlayer();

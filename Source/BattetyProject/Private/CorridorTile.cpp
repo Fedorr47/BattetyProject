@@ -35,12 +35,14 @@ ACorridorTile::ACorridorTile()
 	CorridorTileCollision->OnComponentBeginOverlap.AddDynamic(this, &ACorridorTile::OnOverlapBegin);
 	CorridorTileCollision->SetRelativeLocation(RootRelativeLocation);
 }
+
 void ACorridorTile::OnOverlapBegin(UPrimitiveComponent* firstComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	if (BattetyProjectGameMode && BattetyProjectGameMode->GetCurrentPlayer() == Cast<ABattetyProjectCharacter>(OtherActor))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Yellow, TEXT("overlap !"));
 		CorridorTileCollision->OnComponentBeginOverlap.RemoveDynamic(this, &ACorridorTile::OnOverlapBegin);
-		SpawnCorridorTile(GetWorld());
+		// change to a delegate to avoid strong dependency (also delete ABattetyProjectGameMode object)
+		Cast<ABattetyProjectGameMode>(UGameplayStatics::GetGameMode(this))->AddCoridorTile();
 	}
 }
 
@@ -48,12 +50,6 @@ void ACorridorTile::OnOverlapBegin(UPrimitiveComponent* firstComp, AActor* Other
 void ACorridorTile::BeginPlay()
 {
 	Super::BeginPlay();
-
-	BattetyProjectGameMode = Cast<ABattetyProjectGameMode>(UGameplayStatics::GetGameMode(this));
-	if (BattetyProjectGameMode)
-	{
-		BattetyProjectGameMode->AddCoridorTile(this);
-	}
 }
 
 // Called every frame
@@ -62,22 +58,20 @@ void ACorridorTile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-FTransform ACorridorTile::GetAttachTransform()
+const FTransform& ACorridorTile::GetAttachTransform()
 {
-	if (ptrAttachPoint)
-	{
-		return ptrAttachPoint->GetComponentTransform(); 
-	}
-	return FTransform();
+	return ptrAttachPoint->GetComponentTransform(); 
 }
 
-void ACorridorTile::SpawnCorridorTile(UWorld* world)
+void ACorridorTile::SpawnCorridorTile(const FTransform& inTransform)
 {
-	if (world && CorridorBlueprint) {
+	if (WorldToSpawn && CorridorBlueprint) {
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Instigator = Cast<APawn>(this);
-		CorridorTileCollision->OnComponentBeginOverlap.RemoveDynamic(this, &ACorridorTile::OnOverlapBegin);
-		ACorridorTile* nextTile = world->SpawnActor<ACorridorTile>(CorridorBlueprint, GetAttachTransform(), SpawnParams);
+		WorldToSpawn->SpawnActor<ACorridorTile>(CorridorBlueprint, inTransform, SpawnParams);
 	}
 }
+
+
+
 
