@@ -85,6 +85,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "CorridorTile", Meta = (BlueprintProrected = "true"))
 	TSubclassOf<class ACorridorTile> CorridorBlueprint;
 
+	UPROPERTY()
 	TArray<class ACorridorTile*> TCorridorTile;
 
 private:
@@ -95,6 +96,11 @@ private:
 	class ABattetyProjectCharacter* currentPlayer;
 
 	TArray<class ASpawnVolume*> SpawnVolumeActors;
+
+	UPROPERTY()
+	ACorridorTile* FirstCorridorTile = nullptr;
+	UPROPERTY()
+	ACorridorTile* LastCorridorTile = nullptr;
 
 	/** Handle any function calls that rely upon changing the playing state of a game */
 	void HandleNewState(EBatteryPlayState NewState);

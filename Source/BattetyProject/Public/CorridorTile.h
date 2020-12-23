@@ -32,17 +32,18 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "CorridorTile")
 	class UBoxComponent* CorridorTileCollision;
-
-	UFUNCTION(BlueprintCallable, Category = "CorridorTile")
-	const FTransform& GetAttachTransform();
 	
 	UFUNCTION(BlueprintCallable, Category = "CorridorTile")
-	void SpawnCorridorTile(const FTransform& inTransform);
+	void SpawnCorridorTile(FVector InLocation);
 
 	UFUNCTION()
 	virtual void OnOverlapBegin(class UPrimitiveComponent* firstComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	void SetWorldToSpawn(UWorld* InWorldToSpawn) { WorldToSpawn = InWorldToSpawn; }
+
+	const FVector GetAttachRelativeLocattion();
+	const FVector GetAttachComponentLocation();
+	void  SetCorridorTileLocation(FVector InLocation);
 
 private:
 
@@ -51,4 +52,6 @@ private:
 	USceneComponent* RootSceneComponent;
 
 	UWorld* WorldToSpawn = nullptr;
+
+	AActor* SpawnedCoridorTile = nullptr;
 };

@@ -115,25 +115,43 @@ void ABattetyProjectGameMode::SpawnNextCoridorTile()
 {
 	ACorridorTile* NextCorridorTile = NewObject<ACorridorTile>(CorridorBlueprint);
 	NextCorridorTile->CorridorBlueprint = CorridorBlueprint;
+	NextCorridorTile->SetWorldToSpawn(GetWorld());
+	static const float RelativeX = NextCorridorTile->GetAttachRelativeLocattion().X;
+
 	if (TCorridorTile.Num() > 0)
 	{
-		NextCorridorTile->SpawnCorridorTile(TCorridorTile.Last()->GetAttachTransform());
+		float WorldX = TCorridorTile.Last()->GetAttachComponentLocation().X;
+		NextCorridorTile->SpawnCorridorTile(FVector(WorldX + RelativeX, 0.0f, 0.0f));
 	}
 	else
 	{
-		NextCorridorTile->SetWorldToSpawn(GetWorld());
-		NextCorridorTile->SpawnCorridorTile(FTransform(FVector(0,0,0)));
+		NextCorridorTile->SpawnCorridorTile(FVector(0.0f, 0.0f, 0.0f));
+		FirstCorridorTile = NextCorridorTile;
 	}
-	TCorridorTile.Add(NextCorridorTile);
-	AddCoridorTile();
+	if (NextCorridorTile != nullptr)
+	{
+		TCorridorTile.Add(NextCorridorTile);
+		LastCorridorTile = NextCorridorTile;
+	}
 }
 
 void ABattetyProjectGameMode::AddCoridorTile()
 {
 	if (TCorridorTile.Num() > NumberOfCorridorTiles)
 	{
-		FTransform LastTileTransfrorm = TCorridorTile.Last()->GetAttachTransform();
-		TCorridorTile[0]->SetActorLocation(LastTileTransfrorm.GetLocation());
+		float WorldX = LastCorridorTile->GetAttachComponentLocation().X;
+		static const float RelativeX = TCorridorTile.Last()->GetAttachRelativeLocattion().X;
+		const FVector& newCoridorTileLocation = FVector(WorldX + RelativeX, 0.0f, 0.0f);
+		FirstCorridorTile->SetActorLocation(newCoridorTileLocation);
+		FirstCorridorTile->SetCorridorTileLocation(newCoridorTileLocation);
+		LastCorridorTile = FirstCorridorTile;
+		int32 NextFirst = TCorridorTile.Find(FirstCorridorTile);
+		NextFirst = ++NextFirst % (NumberOfCorridorTiles + 1);
+		FirstCorridorTile = TCorridorTile[NextFirst];
+	}
+	else
+	{
+		SpawnNextCoridorTile();
 	}
 }
 

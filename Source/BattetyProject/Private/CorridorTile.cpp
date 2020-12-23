@@ -29,18 +29,20 @@ ACorridorTile::ACorridorTile()
 	FLinearColor attachColor(255, 0, 0, 0);
 	ptrAttachPoint->SetBoundsScale(5.0f);
 	ptrAttachPoint->SetArrowColor(attachColor);
+	ptrAttachPoint->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 	CorridorTileCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("CorridorTileCollision"));
 	CorridorTileCollision->SetupAttachment(RootComponent);
 	CorridorTileCollision->OnComponentBeginOverlap.AddDynamic(this, &ACorridorTile::OnOverlapBegin);
 	CorridorTileCollision->SetRelativeLocation(RootRelativeLocation);
+	CorridorTileCollision->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
 void ACorridorTile::OnOverlapBegin(UPrimitiveComponent* firstComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult) {
 	if (BattetyProjectGameMode && BattetyProjectGameMode->GetCurrentPlayer() == Cast<ABattetyProjectCharacter>(OtherActor))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Yellow, TEXT("overlap !"));
-		CorridorTileCollision->OnComponentBeginOverlap.RemoveDynamic(this, &ACorridorTile::OnOverlapBegin);
+		//CorridorTileCollision->OnComponentBeginOverlap.RemoveDynamic(this, &ACorridorTile::OnOverlapBegin);
 		// change to a delegate to avoid strong dependency (also delete ABattetyProjectGameMode object)
 		Cast<ABattetyProjectGameMode>(UGameplayStatics::GetGameMode(this))->AddCoridorTile();
 	}
@@ -50,6 +52,7 @@ void ACorridorTile::OnOverlapBegin(UPrimitiveComponent* firstComp, AActor* Other
 void ACorridorTile::BeginPlay()
 {
 	Super::BeginPlay();
+	BattetyProjectGameMode = Cast<ABattetyProjectGameMode>(GetWorld()->GetAuthGameMode());
 }
 
 // Called every frame
@@ -58,18 +61,30 @@ void ACorridorTile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-const FTransform& ACorridorTile::GetAttachTransform()
+const FVector ACorridorTile::GetAttachRelativeLocattion()
 {
-	return ptrAttachPoint->GetComponentTransform(); 
+	return ptrAttachPoint->GetRelativeLocation();
 }
 
-void ACorridorTile::SpawnCorridorTile(const FTransform& inTransform)
+const FVector ACorridorTile::GetAttachComponentLocation()
+{
+	return SpawnedCoridorTile->GetActorLocation();
+}
+
+void ACorridorTile::SpawnCorridorTile(FVector InLocation)
 {
 	if (WorldToSpawn && CorridorBlueprint) {
+
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Instigator = Cast<APawn>(this);
-		WorldToSpawn->SpawnActor<ACorridorTile>(CorridorBlueprint, inTransform, SpawnParams);
+		SpawnedCoridorTile = WorldToSpawn->SpawnActor<ACorridorTile>(CorridorBlueprint, InLocation, FRotator(0.0f, 0.0f, 0.0f), SpawnParams);
+		SpawnedCoridorTile->SetActorLocation(InLocation, false, nullptr, ETeleportType::TeleportPhysics);
 	}
+}
+
+void ACorridorTile::SetCorridorTileLocation(FVector InLocation)
+{
+	SpawnedCoridorTile->SetActorLocation(InLocation, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 
