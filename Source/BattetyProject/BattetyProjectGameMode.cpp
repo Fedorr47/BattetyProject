@@ -25,6 +25,8 @@ ABattetyProjectGameMode::ABattetyProjectGameMode()
 	}
 	// base decay rate
 	DecayRate = 0.01f;
+
+	MiddleOfTiles = MiddleOfTiles > 1 ?  NumberOfCorridorTiles / 2 : 1;
 }
 
 void ABattetyProjectGameMode::Tick(float DeltaTime)
@@ -54,6 +56,7 @@ void ABattetyProjectGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	OnOverlapEvent.AddDynamic(this, &ABattetyProjectGameMode::OverlapDispatcher);
 	// Find all spawn volume actors
 	TArray<AActor*> FoundActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), FoundActors);
@@ -90,6 +93,10 @@ void ABattetyProjectGameMode::BeginPlay()
 	for (int i = 0; i <= NumberOfCorridorTiles; ++i)
 	{
 		SpawnNextCoridorTile();
+		if (i == MiddleOfTiles)
+		{
+			MiddleCorridorTile = TCorridorTile[i];
+		}
 	}
 }
 
@@ -135,6 +142,14 @@ void ABattetyProjectGameMode::SpawnNextCoridorTile()
 	}
 }
 
+void ABattetyProjectGameMode::OverlapDispatcher(AActor* OverlappedObject, AActor* OverlappingObject)
+{
+	if (OverlappingObject && Cast<ABattetyProjectCharacter>(OverlappedObject) && OverlappingObject == MiddleCorridorTile->GetSpawenedCT())
+	{
+		AddCoridorTile();
+	}
+}
+
 void ABattetyProjectGameMode::AddCoridorTile()
 {
 	if (TCorridorTile.Num() > NumberOfCorridorTiles)
@@ -148,6 +163,15 @@ void ABattetyProjectGameMode::AddCoridorTile()
 		int32 NextFirst = TCorridorTile.Find(FirstCorridorTile);
 		NextFirst = ++NextFirst % (NumberOfCorridorTiles + 1);
 		FirstCorridorTile = TCorridorTile[NextFirst];
+		++NextFirst;
+		if (NextFirst <= NumberOfCorridorTiles)
+		{
+			MiddleCorridorTile = TCorridorTile[NextFirst];
+		}
+		else
+		{
+			MiddleCorridorTile = TCorridorTile[0];
+		}
 	}
 	else
 	{

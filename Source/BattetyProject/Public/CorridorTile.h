@@ -34,10 +34,13 @@ public:
 	class UBoxComponent* CorridorTileCollision;
 	
 	UFUNCTION(BlueprintCallable, Category = "CorridorTile")
-	void SpawnCorridorTile(FVector InLocation);
+	AActor* SpawnCorridorTile(FVector InLocation);
 
 	UFUNCTION()
 	virtual void OnOverlapBegin(class UPrimitiveComponent* firstComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	AActor* GetSpawenedCT() { return SpawnedCoridorTile; }
 
 	void SetWorldToSpawn(UWorld* InWorldToSpawn) { WorldToSpawn = InWorldToSpawn; }
 

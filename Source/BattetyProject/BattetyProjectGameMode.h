@@ -53,6 +53,10 @@ public:
 	ABattetyProjectCharacter* GetCurrentPlayer();
 
 	void SpawnNextCoridorTile();
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnOverlapDelegate, AActor*, OverlappedObject, AActor*, OverlappingObject);
+	UPROPERTY(BlueprintAssignable)
+	FOnOverlapDelegate OnOverlapEvent;
 
 protected:
 	/** The rate at which the character loses power */
@@ -101,7 +105,15 @@ private:
 	ACorridorTile* FirstCorridorTile = nullptr;
 	UPROPERTY()
 	ACorridorTile* LastCorridorTile = nullptr;
+	UPROPERTY()
+	ACorridorTile* MiddleCorridorTile = nullptr;
+
+	int32 MiddleOfTiles = 0;
+
 
 	/** Handle any function calls that rely upon changing the playing state of a game */
 	void HandleNewState(EBatteryPlayState NewState);
+	
+	UFUNCTION()
+	void OverlapDispatcher(AActor* OverlappedObject, AActor* OverlappingObject);
 };
